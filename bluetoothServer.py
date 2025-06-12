@@ -14,6 +14,7 @@ PORT = 1             # Standard port for RFCOMM
 AF_BLUETOOTH = 31  # from socket module
 SOCK_STREAM = socket.SOCK_STREAM
 BT_PROTO_RFCOMM = 3
+password = "1234"  # Password for connection verification can be changed
 
 while True:
     # Creating the Bluetooth socket
@@ -25,7 +26,6 @@ while True:
     print(f"[+] Accepted connection from {client_info}")
     client_sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
     client_sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
-    audio_counter = 0
     instructions: list[str] = [""]
     try:
         while True:
@@ -35,8 +35,14 @@ while True:
             try:
                 match int(data[0]):
                     case 0:#  Connecting
-                        client_sock.send("Verbindung verifiziert\n".encode())
-                        print(f"[>] Received: connection verification")
+                        if data[1:] == password:
+                            client_sock.send("Verbindung verifiziert\n".encode())
+                            print(f"[>] Received: connection verification")
+                        else:
+                            client_sock.send("Verbindung fehlgeschlagen\n".encode())
+                            print(f"[!] Connection failed: incorrect password")
+                            client_sock.close()
+                            break
                     case 1:#  Test message
                         client_sock.send("Test erfolgreich \n".encode())
                         print(f"[>] Received: connection test")
