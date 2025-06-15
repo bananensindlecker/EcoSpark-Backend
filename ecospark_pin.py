@@ -69,8 +69,8 @@ def process_instruction_list(instructions:list[str], audio_controller:AudioContr
         GPIO.setwarnings(False)
 
         # Constants
-        INSTRUCTIONS_DIR = Path.home() / 'Desktop' / 'Instructions'
-        INSTRUCTIONS_DIR.mkdir(exist_ok=True)
+        instructions_dir = Path.home() / 'Desktop' / 'Instructions'
+        instructions_dir.mkdir(exist_ok=True)
 
         try:
             events = []
@@ -98,7 +98,7 @@ def process_instruction_list(instructions:list[str], audio_controller:AudioContr
                             continue
                         # Only accept .wav files
                         if item.lower().endswith('.wav'):
-                            mp3_file = INSTRUCTIONS_DIR / item.strip()
+                            mp3_file = instructions_dir / item.strip()
                             # Check if the next part is a volume number
                             if idx + 2 <= len(parts) - 1:
                                 next_item = parts[idx + 2]
@@ -212,6 +212,8 @@ def process_instruction_list(instructions:list[str], audio_controller:AudioContr
         except Exception as e:
             print(f"[?] Error processing:{e}")
             return False
+    return False
+
 
 def process_sequence(instructions:list[str],stop_event):
     print("[*] Starting GPIO+Audio Controller")
@@ -234,5 +236,3 @@ def process_sequence(instructions:list[str],stop_event):
         GPIO.cleanup()
         print("\n[*] Controller stopped.")
 
-if __name__ == '__main__':
-    process_sequence(["T0","T0001000 +P20 +P21","T0002000 -P20 -P21","T0003000 stop"])

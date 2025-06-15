@@ -3,7 +3,9 @@ import base64
 from pathlib import Path
 from convert_data import convert_to_input
 from convert_data import clean_base64
-from Ecospark_pin import process_sequence
+from ecospark_pin import process_sequence
+from mp3_to_wav import convert_mp3_to_wav
+import hashlib
 import threading
 stop_event = threading.Event()
 
@@ -14,7 +16,12 @@ PORT = 1             # Standard port for RFCOMM
 AF_BLUETOOTH = 31  # from socket module
 SOCK_STREAM = socket.SOCK_STREAM
 BT_PROTO_RFCOMM = 3
-password = "1234"  # Password for connection verification can be changed
+password = "15Punkte"  # Password for connection verification can be changed
+hasher = hashlib.sha3_256()
+hasher.update(password.encode('utf8'))
+hashed_password = hasher.hexdigest()
+print(f"[*] Password is: {password}")
+print(f"[*] Hashed Password is: {hashed_password}")
 
 while True:
     # Creating the Bluetooth socket
@@ -36,7 +43,8 @@ while True:
             try:
                 match int(data[0]):
                     case 0:#  Connecting
-                        if data[1:] == password:
+                        print(f"[!] recieved password hash: {data[1:]}")
+                        if data[1:] == hashed_password:
                             client_sock.send("Verbindung verifiziert\n".encode())
                             print(f"[>] Received: connection verification")
                             logged_in = True
@@ -52,7 +60,7 @@ while True:
                             continue
                         client_sock.send("Test erfolgreich \n".encode())
                         print(f"[>] Received: connection test")
-                    case 2:#  Send sequence
+                    case 2:#  Send a sequence
                         if not logged_in:
                             client_sock.send("Nicht angemeldet \n".encode())
                             print(f"[!] Tried sending without being logged in")
@@ -71,7 +79,7 @@ while True:
                             _, base64_data = data.split(':', 1)
                             filename, base64_data = base64_data.split(":", 1)
                             if base64_data.strip() == "START":
-                                # Receive file in chunks until END
+                                # Receive a file in chunks until END
                                 file_chunks = []
                                 while True:
                                     chunk = client_sock.recv(32768).decode()
@@ -93,6 +101,9 @@ while True:
                             continue
                         if instructions[0] != "":
                             stop_event.clear()
+                            print(f"[>] Converting Mp3 files to WAV files")
+                            convert_mp3_to_wav()
+                            print(f"[>] Starting a sequence")
                             client_sock.send("Startet abfolge\n".encode())
                             # Start the sequence in a new thread
                             seq_thread = threading.Thread(target=process_sequence, args=(instructions,stop_event))

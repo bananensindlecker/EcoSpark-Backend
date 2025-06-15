@@ -36,7 +36,6 @@ def convert_to_input(transmission:str):
             time_instructions: list[str] = [f"T{start} {pins_on}",f"T{end} {pins_off}"]
 
             if len(attributes) == 5:
-                print("blinking detected")
                 frequency = math.ceil(int(attributes[4]) /2)
 
                 blink_times:list[int] = [start + frequency]
@@ -51,7 +50,6 @@ def convert_to_input(transmission:str):
                     if index % 2 == 0:
                         blink_instruction = f"T{str(time)} {pins_off}"
                         blink_instructions.append(blink_instruction)
-                print(blink_times)
                 time_instructions.extend(blink_instructions)
 
             raw_output_instructions.extend(time_instructions)
