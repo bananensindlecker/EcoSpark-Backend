@@ -16,6 +16,10 @@ PORT = 1             # Standard port for RFCOMM
 AF_BLUETOOTH = 31  # from socket module
 SOCK_STREAM = socket.SOCK_STREAM
 BT_PROTO_RFCOMM = 3
+
+# Making discoverable
+make_discoverable = threading.Thread(target=convert_mp3_to_wav())
+
 password = "15Punkte"  # Password for connection verification can be changed
 hasher = hashlib.sha3_256()
 hasher.update(password.encode('utf8'))

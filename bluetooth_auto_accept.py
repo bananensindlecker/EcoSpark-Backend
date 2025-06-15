@@ -107,10 +107,10 @@ EOF""")
                 return False
         return True
 
-def main():
+def auto_accept_bluetooth():
     manager = BluetoothManager()
     if manager.full_setup():
         manager.keep_discoverable()
 
 if __name__ == '__main__':
-    main()
+    auto_accept_bluetooth()
