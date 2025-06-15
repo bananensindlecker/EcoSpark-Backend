@@ -27,6 +27,7 @@ while True:
     client_sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
     client_sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
     instructions: list[str] = [""]
+    logged_in:bool = False
     try:
         while True:
             data = client_sock.recv(32768).decode().strip()
@@ -38,19 +39,32 @@ while True:
                         if data[1:] == password:
                             client_sock.send("Verbindung verifiziert\n".encode())
                             print(f"[>] Received: connection verification")
+                            logged_in = True
                         else:
                             client_sock.send("Verbindung fehlgeschlagen\n".encode())
                             print(f"[!] Connection failed: incorrect password")
                             client_sock.close()
                             break
                     case 1:#  Test message
+                        if not logged_in:
+                            client_sock.send("Nicht angemeldet \n".encode())
+                            print(f"[!] Tried sending without being logged in")
+                            continue
                         client_sock.send("Test erfolgreich \n".encode())
                         print(f"[>] Received: connection test")
                     case 2:#  Send sequence
+                        if not logged_in:
+                            client_sock.send("Nicht angemeldet \n".encode())
+                            print(f"[!] Tried sending without being logged in")
+                            continue
                         client_sock.send("Abfolge erfolgreich erhalten \n".encode())
                         print(f"[>] Received: sequence ({data})")
                         instructions = convert_to_input(data[1:])
                     case 3:#  audio file
+                        if not logged_in:
+                            client_sock.send("Nicht angemeldet \n".encode())
+                            print(f"[!] Tried sending without being logged in")
+                            continue
                         client_sock.send("Audio Datei beginnt Transfer\n".encode())
                         print(f"[>] Recieved: Audio file")
                         if ':' in data:
@@ -73,6 +87,10 @@ while True:
                                 print(f"[*] Audio file saved as {filename}")
                                 client_sock.send(f"Audio Datei gespeichet als {filename}\n".encode())
                     case 4:  # starting sequence
+                        if not logged_in:
+                            client_sock.send("Nicht angemeldet \n".encode())
+                            print(f"[!] Tried sending without being logged in")
+                            continue
                         if instructions[0] != "":
                             stop_event.clear()
                             client_sock.send("Startet abfolge\n".encode())
@@ -83,16 +101,20 @@ while True:
                         else:
                             client_sock.send("Keine Abfolge erhalten\n".encode())
                     case 5:#  stop sequence
+                        if not logged_in:
+                            client_sock.send("Nicht angemeldet \n".encode())
+                            print(f"[!] Tried sending without being logged in")
+                            continue
                         stop_event.set()
                         client_sock.send("Stoppe Abfolge\n".encode())
                         print(f"[>] Received: stop sequence")
             except Exception as e:
                 print(f"[!] Error processing data: {e}")
                 client_sock.send(f"Fehler bei der Verarbeitung: {str(e)}\n".encode())
-                client_sock.close()
                 instructions = [""]
                 break
     except OSError as e:
         print(f"[!] Error: {e}")
         client_sock.close()
+        logged_in = False
         instructions = [""]
