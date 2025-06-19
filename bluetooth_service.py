@@ -8,6 +8,9 @@ from ecospark_pin import process_sequence
 import hashlib
 import threading
 
+"""
+Bluetooth server for receiving commands to control GPIO pins and audio playback on a Raspberry Pi.
+"""
 
 
 #  Initializing the stop event for sequence control
@@ -21,7 +24,7 @@ AF_BLUETOOTH = 31  # from socket module
 SOCK_STREAM = socket.SOCK_STREAM
 BT_PROTO_RFCOMM = 3
 
-# Making discoverable
+# Start Bluetooth discoverability in a separate thread
 make_discoverable = threading.Thread(target=auto_accept_bluetooth())
 make_discoverable.start()
 
@@ -144,7 +147,7 @@ while True:
                         server_sock.close()
                         try:
                             import os
-                            #  Sending shutdown command to the system
+                            #  Gracefully close sockets and send shutdown command to OS
                             os.system("sudo shutdown now")
                         except Exception as e:
                             print(f"[!] Error shutting down: {e}")

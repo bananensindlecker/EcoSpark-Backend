@@ -3,6 +3,27 @@ import re
 import math
 
 def convert_to_input(transmission:str):
+    """
+    Converts a transmission string into a list of formatted instructions.
+    
+    Input format: 
+    
+    "light,     01/05/20,   0001000,    0002000,    20"
+    
+    ^Type       ^Pins       ^Startzeit  ^Stopzeit  ^frequenz?
+
+
+    "sound,    audio.wav,  0003000,    50"
+    
+    ^Type      ^Dateiname  ^Startzeit  ^Lautstärke
+
+
+    "three_d,   20,         0001000,    0002000,"
+    
+    ^Type       ^Pins       ^Startzeit  ^Stopzeit
+
+    Output: List of time-based instructions for sequence processing.
+    """
 
     #  List of all incoming instructions
     raw_instructions:list[str] = transmission.split("?")
@@ -16,7 +37,7 @@ def convert_to_input(transmission:str):
         typee = attributes[0]
 
         
-        if typee == "light":#  Process for light effects
+        if typee == "light":    #  Process for light effects
 
             #  Pins formating for as "+Pxx / -Pxx"
             pins = attributes[1].split("/")
@@ -44,7 +65,7 @@ def convert_to_input(transmission:str):
                     blink_times.append(blink_times[-1]+frequency)
 
                 blink_instructions:list[str] = []
-                #  Makes the blinking happen by alternating between on and off
+                #  Generate alternating ON/OFF instructions for blinking effect
                 for index, time in enumerate(blink_times):
                     if index % 2 == 1:
                         blink_instruction = f"T{str(time)} {pins_on}"
@@ -57,7 +78,7 @@ def convert_to_input(transmission:str):
 
             #  Add the time instructions to the raw output instructions
             raw_output_instructions.extend(time_instructions)
-        elif typee == "sound":#  Process for sound effects
+        elif typee == "sound":  #  Process for sound effects
             filename = attributes[1]
             start:int = int(attributes[2])
             volume:int = int(attributes[3])
@@ -91,6 +112,9 @@ def convert_to_input(transmission:str):
 
 #  Makes the magic happen
 def sort_merge_stop(instructions:list[str]):
+    """
+    Groups, merges, and sorts instructions by time, then adds a STOP instruction at the end.
+    """
     #  Dictionary to group by T-number
     groups = defaultdict(list)
 
@@ -112,6 +136,9 @@ def sort_merge_stop(instructions:list[str]):
     return instructions
 
 def clean_base64(data: str) -> str:
+    """
+    Cleans and pads base64 data for safe decoding.
+    """
     data = data.strip().replace('\n', '').replace('\r', '')
     #  Pad with '=' if needed
     missing_padding = len(data) % 4

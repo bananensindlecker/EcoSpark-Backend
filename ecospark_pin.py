@@ -4,6 +4,9 @@ from pathlib import Path
 import pygame
 
 class AudioController:
+    """
+    Controls audio playback using pygame, manages played files and cleanup.
+    """
 
     def __init__(self):
         self.played_files = set()
@@ -59,6 +62,9 @@ class AudioController:
         self.played_files.clear()
 
 def process_instruction_list(instructions:list[str], audio_controller:AudioController,stop_event):
+    """
+    Parses a list of instruction strings and executes GPIO/audio events in sequence.
+    """
     stopped = False
     while not stopped:
         if stop_event.is_set():
@@ -216,6 +222,9 @@ def process_instruction_list(instructions:list[str], audio_controller:AudioContr
 
 
 def process_sequence(instructions:list[str],stop_event):
+    """
+    Handles GPIO pin control and audio playback based on parsed instruction sequences.
+    """
     print("[*] Starting GPIO+Audio Controller")
 
     audio_controller = AudioController()
