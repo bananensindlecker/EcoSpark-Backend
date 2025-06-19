@@ -183,18 +183,18 @@ def process_instruction_list(instructions:list[str], audio_controller:AudioContr
                         # Wait for all audio playbacks to finish before cleanup
                         while pygame.mixer.get_busy():
                             time.sleep(0.1)
-
-                        # Cleanup: Delete all played audio files
-                        for value in [ev[2] for ev in events if ev[1] == 'AUDIO']:
-                            audio_file = value[0]
-                            try:
-                                if audio_file.exists():
-                                    audio_file.unlink()
-                                    print(f"[*] Deleted audio file: {audio_file.name}")
-                                else:
-                                    print(f"[?] Audio file not found for deletion: {audio_file.name}")
-                            except Exception as e:
-                                print(f"[?] Failed to delete audio file {audio_file.name}: {e}")
+                    
+                        #  Delete all played audio files
+                        #for value in [ev[2] for ev in events if ev[1] == 'AUDIO']:
+                        #    audio_file = value[0]
+                        #    try:
+                        #        if audio_file.exists():
+                        #            audio_file.unlink()
+                        #            print(f"[*] Deleted audio file: {audio_file.name}")
+                        #        else:
+                        #            print(f"[?] Audio file not found for deletion: {audio_file.name}")
+                        #    except Exception as e:
+                        #        print(f"[?] Failed to delete audio file {audio_file.name}: {e}")
                     event_idx += 1
 
 
