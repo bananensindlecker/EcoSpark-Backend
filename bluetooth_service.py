@@ -87,7 +87,7 @@ while True:
                         client_sock.send("Abfolge erfolgreich erhalten \n".encode())
                         print(f"[>] Received: sequence ({data})")
                         instructions = convert_to_input(data[1:])
-                    case 3:#  Send a audio file (NO LONGER USED)
+                    case 3:#  Send a audio file
                         if not logged_in:
                             client_sock.send("Nicht angemeldet \n".encode())
                             print(f"[!] Tried sending without being logged in")

@@ -11,7 +11,7 @@ class AudioController:
     def __init__(self):
         self.played_files = set()
         self.current_file = None
-        self.current_volume = 1.0  # pygame volume: 0.0 - 1.0
+        self.current_volume = 1.0  #  pygame volume: 0.0 - 1.0
         self._initialize_player()
 
     @staticmethod
@@ -34,7 +34,7 @@ class AudioController:
 
         try:
             self.played_files.add(file_path)
-            # Lade und spiele die Datei ab (WAV/OGG empfohlen)
+            #  Lade und spiele die Datei ab (WAV/OGG empfohlen)
             sound = pygame.mixer.Sound(str(file_path))
             sound.set_volume(max(0.0, min(1.0, volume / 100)))
             sound.play()
@@ -52,7 +52,7 @@ class AudioController:
         except Exception as e:
             print(f"[?] pygame.mixer cleanup failed: {e}")
 
-        # Entfernt abgespielte Dateien
+        #  Entfernt abgespielte Dateien
         for mp3 in self.played_files:
             try:
                 if mp3.exists():
@@ -70,11 +70,11 @@ def process_instruction_list(instructions:list[str], audio_controller:AudioContr
         if stop_event.is_set():
             print("[*] Sequence cancelled by user.")
             break
-        # GPIO Setup
+        #  GPIO Setup
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
 
-        # Constants
+        #  Constants
         instructions_dir = Path.home() / 'Desktop' / 'Instructions'
         instructions_dir.mkdir(exist_ok=True)
 
@@ -102,10 +102,10 @@ def process_instruction_list(instructions:list[str], audio_controller:AudioContr
                         if skip_next:
                             skip_next = False
                             continue
-                        # Only accept .wav files
+                        #  Only accept .wav files
                         if item.lower().endswith('.wav'):
                             mp3_file = instructions_dir / item.strip()
-                            # Check if the next part is a volume number
+                            #  Check if the next part is a volume number
                             if idx + 2 <= len(parts) - 1:
                                 next_item = parts[idx + 2]
                                 try:
@@ -129,19 +129,19 @@ def process_instruction_list(instructions:list[str], audio_controller:AudioContr
                             except Exception:
                                 continue
 
-                    # Audio event
+                    #  Audio event
                     if mp3_file and mp3_file.exists():
                         events.append((time_ms, 'AUDIO', (mp3_file, volume)))
 
                 except Exception as e:
                     print(f"[?] Error parsing instruction: {instruction} - {e}")
 
-            # If no STOP event was found, add one at the last event time
+            #  If no STOP event was found, add one at the last event time
             if not any(ev[1] == 'STOP' for ev in events):
                 last_time = events[-1][0] if events else 0
                 events.append((last_time, 'STOP', None))
 
-            # Execute events (rest of your existing code...)
+            #  Execute events (rest of your existing code...)
             events.sort()
             start_time = time.time() * 1000
             event_idx = 0
@@ -159,14 +159,14 @@ def process_instruction_list(instructions:list[str], audio_controller:AudioContr
                     break
                 current_ms = time.time() * 1000 - start_time
 
-                # Track previous pin states
+                #  Track previous pin states
                 prev_states = {pin: GPIO.input(pin) for pin in active_pins}
 
-                # Process all events that should happen at this time
+                #  Process all events that should happen at this time
                 while event_idx < len(events) and events[event_idx][0] <= current_ms:
                     time_ms, event_type, value = events[event_idx]
 
-                    # Handle event
+                    #  Handle event
                     if event_type == 'PIN_ON':
                         GPIO.setup(value, GPIO.OUT)
                         GPIO.output(value, GPIO.HIGH)
@@ -186,21 +186,21 @@ def process_instruction_list(instructions:list[str], audio_controller:AudioContr
                         print("[*] STOP event reached. Ending processing.")
                         stopped = True
 
-                        # Wait for all audio playbacks to finish before cleanup
+                        #  Wait for all audio playbacks to finish before cleanup
                         while pygame.mixer.get_busy():
                             time.sleep(0.1)
                     
                         #  Delete all played audio files
-                        #for value in [ev[2] for ev in events if ev[1] == 'AUDIO']:
-                        #    audio_file = value[0]
-                        #    try:
-                        #        if audio_file.exists():
-                        #            audio_file.unlink()
-                        #            print(f"[*] Deleted audio file: {audio_file.name}")
-                        #        else:
-                        #            print(f"[?] Audio file not found for deletion: {audio_file.name}")
-                        #    except Exception as e:
-                        #        print(f"[?] Failed to delete audio file {audio_file.name}: {e}")
+                        for value in [ev[2] for ev in events if ev[1] == 'AUDIO']:
+                            audio_file = value[0]
+                            try:
+                                if audio_file.exists():
+                                    audio_file.unlink()
+                                    print(f"[*] Deleted audio file: {audio_file.name}")
+                                else:
+                                    print(f"[?] Audio file not found for deletion: {audio_file.name}")
+                            except Exception as e:
+                                print(f"[?] Failed to delete audio file {audio_file.name}: {e}")
                     event_idx += 1
 
 
