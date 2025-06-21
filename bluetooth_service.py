@@ -21,7 +21,7 @@ stop_event = threading.Event()
 SERVER_ADDRESS = get_bluetooth_address()#  Automatically get the Bluetooth address
 if not SERVER_ADDRESS:
     raise RuntimeError("Could not determine Bluetooth address automatically.")
-PORT = 1             #  Port for RFCOMM
+PORT = 1#  Port for RFCOMM
 
 #  Bluetooth constants
 AF_BLUETOOTH = 31  #  From socket module
@@ -29,7 +29,7 @@ SOCK_STREAM = socket.SOCK_STREAM
 BT_PROTO_RFCOMM = 3
 
 #  Start Bluetooth discoverability in a separate thread
-make_discoverable = threading.Thread(target=auto_accept_bluetooth())
+make_discoverable = threading.Thread(target=auto_accept_bluetooth)
 make_discoverable.start()
 
 #  Password for connection verification can be changed
@@ -61,6 +61,7 @@ while True:
         while True:
             #  Receiving and decoding data
             data = client_sock.recv(32768).decode().strip()
+            print(f"[>] Received data")
             if not data:
                 break
             try:
