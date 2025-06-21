@@ -1,12 +1,13 @@
 import socket
 import base64
 from pathlib import Path
+import hashlib
+import threading
 from bluetooth_auto_accept import auto_accept_bluetooth
 from convert_data import convert_to_input
 from convert_data import clean_base64
 from ecospark_pin import process_sequence
-import hashlib
-import threading
+from find_bluetooth import get_bluetooth_address
 
 """
 Bluetooth server for receiving commands to control GPIO pins and audio playback on a Raspberry Pi.
@@ -16,15 +17,18 @@ Bluetooth server for receiving commands to control GPIO pins and audio playback 
 #  Initializing the stop event for sequence control
 stop_event = threading.Event()
 
-# Constants for Bluetooth socket
-SERVER_ADDRESS = "B8:27:EB:B7:8B:BB"  
-PORT = 1             # Standard port for RFCOMM
-# Bluetooth constants
-AF_BLUETOOTH = 31  # from socket module
+#  Constants for Bluetooth socket
+SERVER_ADDRESS = get_bluetooth_address()#  Automatically get the Bluetooth address
+if not SERVER_ADDRESS:
+    raise RuntimeError("Could not determine Bluetooth address automatically.")
+PORT = 1             #  Port for RFCOMM
+
+#  Bluetooth constants
+AF_BLUETOOTH = 31  #  From socket module
 SOCK_STREAM = socket.SOCK_STREAM
 BT_PROTO_RFCOMM = 3
 
-# Start Bluetooth discoverability in a separate thread
+#  Start Bluetooth discoverability in a separate thread
 make_discoverable = threading.Thread(target=auto_accept_bluetooth())
 make_discoverable.start()
 
@@ -162,3 +166,4 @@ while True:
         client_sock.close()
         logged_in = False
         instructions = [""]
+
