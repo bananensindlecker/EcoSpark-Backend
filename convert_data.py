@@ -26,7 +26,8 @@ def convert_to_input(transmission:str):
     """
 
     #  List of all incoming instructions
-    raw_instructions:list[str] = transmission.split("?")
+    raw_instructions:list[str] = [instruction.strip() for instruction in transmission.split("?")]
+
 
     #  Eventual output of convert_to_input
     raw_output_instructions:list[str] = []
@@ -34,13 +35,20 @@ def convert_to_input(transmission:str):
     #  Taking raw instructions apart into all values
     for raw_instruction in raw_instructions:
         attributes = raw_instruction.split(",")
-        typee = attributes[0]
+        new_attributes:list =[]
+        for attribute in attributes:
+            attribute.strip()
+            new_attributes.append(attribute)
+        attributes = new_attributes
 
+        typee = attributes[0]
         
         if typee == "light":    #  Process for light effects
 
             #  Pins formating for as "+Pxx / -Pxx"
             pins = attributes[1].split("/")
+            new_pins:list = []
+
             pins_on_list = []
             pins_off_list = []
 
@@ -88,6 +96,8 @@ def convert_to_input(transmission:str):
 
             #  Pins formating for as "+Pxx / -Pxx"
             pins = attributes[1].split("/")
+            new_pins:list = []
+
             pins_on_list = []
             pins_off_list = []
 
@@ -107,6 +117,7 @@ def convert_to_input(transmission:str):
     output_instructions = sort_merge_stop(raw_output_instructions)
 
     #  Returns the output instructions
+    print(output_instructions)
     return output_instructions
 
 
@@ -140,12 +151,16 @@ def clean_base64(data: str) -> str:
     Cleans and pads base64 data for safe decoding.
     """
     data = data.strip().replace('\n', '').replace('\r', '')
+    data = re.sub(r'\s+', '', data)  # Remove all whitespace
     #  Pad with '=' if needed
     missing_padding = len(data) % 4
     if missing_padding:
         data += '=' * (4 - missing_padding)
     return data
 
-
+class test:
+    @staticmethod
+    def is_set(e):
+        return False
 if __name__ == '__main__':
     convert_to_input("light,20,1000,2000,100")

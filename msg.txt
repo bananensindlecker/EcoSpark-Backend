@@ -1,0 +1,7 @@
+    #  List of all incoming instructions
+    raw_instructions:list[str] = transmission.split("?")
+    new_raw_instructions:list[str] =[]
+    for raw_instruction in raw_instructions:
+        raw_instruction.replace('\n', '')
+        new_raw_instructions.append(raw_instruction)
+    raw_instructions = new_raw_instructions

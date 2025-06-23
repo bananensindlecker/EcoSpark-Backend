@@ -7,7 +7,6 @@ from bluetooth_auto_accept import auto_accept_bluetooth
 from convert_data import convert_to_input
 from convert_data import clean_base64
 from ecospark_pin import process_sequence
-from find_bluetooth import get_bluetooth_address
 
 """
 Bluetooth server for receiving commands to control GPIO pins and audio playback on a Raspberry Pi.
@@ -18,9 +17,7 @@ Bluetooth server for receiving commands to control GPIO pins and audio playback 
 stop_event = threading.Event()
 
 #  Constants for Bluetooth socket
-SERVER_ADDRESS = get_bluetooth_address()#  Automatically get the Bluetooth address
-if not SERVER_ADDRESS:
-    raise RuntimeError("Could not determine Bluetooth address automatically.")
+SERVER_ADDRESS = "B8:27:EB:CB:26:50"
 PORT = 1#  Port for RFCOMM
 
 #  Bluetooth constants
@@ -36,7 +33,7 @@ make_discoverable.start()
 password = "15Punkte"  
 print(f"[*] Password is: {password}")
 
-#  Hashing password for secure conperasion
+#  Hashing password for secure comparison
 hasher = hashlib.sha3_256()
 hasher.update(password.encode('utf8'))
 hashed_password = hasher.hexdigest()
@@ -56,15 +53,23 @@ while True:
     client_sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
     instructions: list[str] = [""]
     logged_in:bool = False
+    leftover = ""
     try:
         #  Loops to handle incoming data
         while True:
             #  Receiving and decoding data
             data = client_sock.recv(32768).decode().strip()
-            print(f"[>] Received data")
+            if leftover:
+                data = leftover + data
             if not data:
                 break
             try:
+                if not data[0].isnumeric():
+                    print(f"[!] Invalid data received: {data}")
+                    client_sock.send("Ungültige Daten empfangen\n".encode())
+                    continue
+                    
+                print(f"[>] Received data")
                 match int(data[0]):
                     case 0:#  Connecting and checking password
                         print(f"[!] received password hash: {data[1:]}")
@@ -77,7 +82,7 @@ while True:
                             print(f"[!] Connection failed: incorrect password")
                             client_sock.close()
                             break
-                    case 1:#  Test message for debug perposes
+                    case 1:#  Test message for debug purposes
                         if not logged_in:
                             client_sock.send("Nicht angemeldet \n".encode())
                             print(f"[!] Tried sending without being logged in")
@@ -92,7 +97,7 @@ while True:
                         client_sock.send("Abfolge erfolgreich erhalten \n".encode())
                         print(f"[>] Received: sequence ({data})")
                         instructions = convert_to_input(data[1:])
-                    case 3:#  Send a audio file
+                    case 3:#  Send an audio file
                         if not logged_in:
                             client_sock.send("Nicht angemeldet \n".encode())
                             print(f"[!] Tried sending without being logged in")
@@ -108,17 +113,22 @@ while True:
                                 while True:
                                     chunk = client_sock.recv(32768).decode()
                                     if "END" in chunk:
-                                        file_chunks.append(chunk.replace("END", ""))
+                                        before_end, after_end = chunk.split("END", 1)
+                                        file_chunks.append(before_end)
+                                        # If there's anything after END, save it for the next message
+                                        leftover = after_end.strip()
                                         break
-                                    file_chunks.append(chunk)
+                                    else:
+                                        file_chunks.append(chunk)
                                 full_base64_data = ''.join(file_chunks).rstrip('\n')
                                 # Clean and pad base64 before decoding
+                                full_base64_data = ''.join(file_chunks).rstrip('\n')
                                 full_base64_data = clean_base64(full_base64_data)
                                 with open(f"{Path.home()}/Desktop/Instructions/{filename}", "wb") as new_file:
                                     new_file.write(base64.b64decode(full_base64_data))
                                 print(f"[*] Audio file saved as {filename}")
                                 client_sock.send(f"Audio Datei gespeichet als {filename}\n".encode())
-                    case 4:#  Starting sequence (sequence must be send first)
+                    case 4:#  Starting sequence (a sequence must be sent first)
                         if not logged_in:
                             client_sock.send("Nicht angemeldet \n".encode())
                             print(f"[!] Tried sending without being logged in")
