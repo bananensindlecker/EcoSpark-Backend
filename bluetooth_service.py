@@ -59,17 +59,10 @@ while True:
         while True:
             #  Receiving and decoding data
             data = client_sock.recv(32768).decode().strip()
-            if leftover:
-                data = leftover + data
             if not data:
                 break
             try:
-                if not data[0].isnumeric():
-                    print(f"[!] Invalid data received: {data}")
-                    client_sock.send("Ungültige Daten empfangen\n".encode())
-                    continue
-                    
-                print(f"[>] Received data")
+                print(f"[>] Received data")      
                 match int(data[0]):
                     case 0:#  Connecting and checking password
                         print(f"[!] received password hash: {data[1:]}")
@@ -116,7 +109,11 @@ while True:
                                         before_end, after_end = chunk.split("END", 1)
                                         file_chunks.append(before_end)
                                         # If there's anything after END, save it for the next message
-                                        leftover = after_end.strip()
+                                        leftover = after_end.lstrip('\r\n')
+                                        while len(leftover) > 0:
+                                            if leftover and not leftover[0].isdigit():
+                                                # If leftover doesn't start with a digit, discard it
+                                                leftover = leftover[1:]
                                         break
                                     else:
                                         file_chunks.append(chunk)
@@ -167,6 +164,7 @@ while True:
                         except Exception as e:
                             print(f"[!] Error shutting down: {e}")
                             client_sock.send(f"Fehler beim Herunterfahren: {str(e)}\n".encode())
+                    
             except Exception as e:#  Handling errors in data processing
                 print(f"[!] Error processing data: {e}")
                 client_sock.send(f"Fehler bei der Verarbeitung: {str(e)}\n".encode())

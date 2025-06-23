@@ -96,7 +96,6 @@ def convert_to_input(transmission:str):
 
             #  Pins formating for as "+Pxx / -Pxx"
             pins = attributes[1].split("/")
-            new_pins:list = []
 
             pins_on_list = []
             pins_off_list = []
