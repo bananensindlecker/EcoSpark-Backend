@@ -1,3 +1,5 @@
+# Data conversion module for processing transmission strings into structured instructions. 
+# Erstellt von: Levi Post
 from collections import defaultdict
 import re
 import math

@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# Bluetooth Auto-Accept Script 
+# Erstellt von: Kjell Peteaux
 import subprocess
 import time
 import signal

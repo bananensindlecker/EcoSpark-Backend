@@ -1,3 +1,5 @@
+# Bluetooth service for Raspberry Pi 
+# erstellt von: Levi Post
 import socket
 import base64
 from pathlib import Path
@@ -62,7 +64,7 @@ while True:
             if not data:
                 break
             try:
-                print(f"[>] Received data")      
+                print(f"[>] Received data of type {data[0]}")      
                 match int(data[0]):
                     case 0:#  Connecting and checking password
                         print(f"[!] received password hash: {data[1:]}")

@@ -1,3 +1,5 @@
+# This script finds the Bluetooth MAC address of the first hci device on a Linux system.
+# Erstellt von: Levi Post
 import subprocess
 import re
 

@@ -1,3 +1,5 @@
+# GPIO and Audio Controller for Raspberry Pi 
+# Erstellt von: Kjell Peteaux mit Kleineren Anpassungen von: Levi Post
 import time
 import RPi.GPIO as GPIO
 from pathlib import Path
